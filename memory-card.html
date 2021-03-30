@@ -1,0 +1,88 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="memory-card">
+  <template>
+    <style>
+      :host {
+        width: 80px;
+        height: 70px;
+        padding: 2em;
+        margin: 50px;
+        background-image: url('https://image.freepik.com/free-vector/beautiful-background-with-pink-clouds-sky_1278-71.jpg');
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        border-radius: 2rem;
+      }
+
+      .value {
+        font-size: 3em;
+        cursor: not-allowed;
+      }
+
+      .hide {
+        display: none;
+      }
+
+      .unplayed {
+        border-color: transparent;
+        font-size: 2em;
+        position: absolute;
+        transform: translate(-15px, -20px);
+      }
+
+      .card-found {
+        text-align: center;
+        font-weight: 800;
+        font-size: 25px;
+      }
+    </style>
+    <div>
+      <div class="unplayed">
+        <template is="dom-if" if="{{isPlayed}}">
+          <p> {{fruit}}</p>
+        </template>
+      </div>
+      <div class$="{{__isPlayed(isPlayed)}} value">
+        ❔
+      </div>
+    </div>
+  </template>
+
+  <script>
+    class MemoryCard extends Polymer.Element {
+      static get is() {
+        return 'memory-card';
+      }
+      static get properties() {
+        return {
+          isPlayed: {
+            type: Boolean,
+            value: false
+          },
+          winner: {
+            type: String,
+            reflect: true,
+          },
+          fruit: {
+            type: String,
+          },
+          showClass: {
+            type: Boolean,
+            value: true
+          }
+        };
+      }
+
+      __isPlayed(isPlayed) {
+        return isPlayed ? 'hide' : '';
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+      }
+    }
+
+    window.customElements.define(MemoryCard.is, MemoryCard);
+  </script>
+</dom-module>

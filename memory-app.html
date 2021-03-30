@@ -1,0 +1,303 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="./score-board.html">
+<link rel="import" href="./memory-card.html">
+
+<dom-module id="memory-app">
+  <template>
+    <style>
+      :host {
+        background-image: url('https://i.pinimg.com/originals/79/52/6c/79526c076a08e525becfd4215e1c6c16.jpg');
+        display: flex;
+        color: white;
+        font-family: sans-serif;
+        flex-direction: column;
+        justify-content: center;
+        border-radius: 30px;
+        width: 100%;
+        height: auto;
+      }
+
+      #board {
+        width: 100%;
+        display: flex;
+        height: auto;
+        flex-wrap: wrap;
+        flex-direction: row;
+        justify-content: space-evenly;
+      }
+
+      .score-board {
+        display: flex;
+        justify-content: space-evenly;
+      }
+
+      .player1 {
+        margin-right: 100px;
+        margin-left: 50px;
+      }
+
+      .player2 {
+        margin-left: 100px;
+        margin-right: 50px;
+      }
+
+      #welcome-message {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        max-height: 60px;
+        padding: 10px;
+        border-radius: 1rem;
+        text-align: center;
+        z-index: 1;
+        background-image: url('https://image.winudf.com/v2/image/Y29tLmJsYWNrYmFja2dyb3VuZHdhbGxwYXBlcnNpbWFnZXNfc2NyZWVuXzJfMTUwOTI1MjEyOV8wOTU/screen-2.jpg?h=355&fakeurl=1&type=.jpg');
+      }
+
+      .play-image {
+        border-radius: 2rem;
+        max-width: 200px;
+        max-height: 80px;
+      }
+    </style>
+    <div class="score-board">
+      <score-board score="[[addScore1]]" is-turn="[[player1Turn]]" player="[[player1Name]]" class="player1">
+      </score-board>
+      <div id="welcome-message">{{message}}</div>
+      <score-board score="[[addScore2]]" is-turn="[[player2Turn]]" player="[[player2Name]]" class="player2">
+      </score-board>
+    </div>
+    <div id="board">
+      <template is="dom-repeat" items="[[cardArray]]" as="card">
+        <memory-card on-click="__fruitSelected" fruit="[[card.value]]" show-class="[[card.show]]"
+          is-played="[[card.isPlayed]]">
+        </memory-card>
+      </template>
+    </div>
+  </template>
+
+  <script>
+    class MemoryApp extends Polymer.Element {
+      static get is() {
+        return 'memory-app';
+      }
+      static get properties() {
+        return {
+          cardArray: {
+            type: Array,
+            value: [{
+                value: '🍕',
+                show: true,
+                isPlayed: false,
+              },
+              {
+                value: '🍍',
+                show: true,
+                isPlayed: false,
+              },
+              {
+                value: '🍉',
+                show: true,
+                isPlayed: false,
+              },
+              {
+                value: '🥕',
+                show: true,
+                isPlayed: false,
+              },
+              {
+                value: '🍤',
+                show: true,
+                isPlayed: false,
+              },
+              {
+                value: '🍕',
+                show: true,
+                isPlayed: false,
+              },
+              {
+                value: '🍍',
+                show: true,
+                isPlayed: false,
+              },
+              {
+                value: '🍉',
+                show: true,
+                isPlayed: false,
+              },
+              {
+                value: '🥕',
+                show: true,
+                isPlayed: false,
+              },
+              {
+                value: '🍤',
+                show: true,
+                isPlayed: false,
+              },
+            ]
+          },
+          saveFruit: {
+            type: Object,
+            value: {
+              value: '',
+              id: ''
+            }
+          },
+          turnCounter: {
+            type: Number,
+            value: 0
+          },
+          playerTurn: {
+            type: Boolean,
+            value: true
+          },
+          addScore1: {
+            type: Number,
+            value: 0
+          },
+          addScore2: {
+            type: Number,
+            value: 0
+          },
+          player1Turn: {
+            type: Boolean,
+            value: true
+          },
+          player2Turn: {
+            type: Boolean,
+            value: false
+          },
+          isWinner: {
+            type: Boolean,
+            value: false
+          },
+          gameFinish: {
+            type: Number,
+            value: 0
+          },
+          player1Name: {
+            type: String,
+            value: 'Oscar'
+          },
+          player2Name: {
+            type: String,
+            value: 'Rival'
+          },
+          message: {
+            type: String,
+            value: 'Lets play memory'
+          },
+
+        };
+      }
+
+      __sortCards() {
+        let currentIndex = this.get('cardArray').length;
+        let temporaryValue;
+        let randomIndex;
+        while (currentIndex !== 0) {
+          randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex -= 1;
+          temporaryValue = this.get('cardArray')[currentIndex];
+          this.set('cardArray.' + currentIndex, this.get('cardArray')[randomIndex]);
+          this.set('cardArray.' + randomIndex, temporaryValue);
+        }
+        return this.get('cardArray');
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.__playerManage();
+        this.__sortCards();
+      }
+
+      __fruitSelected(e) {
+        if (this.get('saveFruit.id') !== e.model.index) {
+          this.__playerManage();
+          this.set('turnCounter', this.get('turnCounter') + 1);
+          this.__changeTurn();
+          this.set('cardArray.' + e.model.index + '.isPlayed', true);
+          if (this.get('saveFruit.value')) {
+            this.__compareFruits(e);
+          } else {
+            this.set('saveFruit', {
+              value: e.model.get('card.value'),
+              id: e.model.index
+            });
+          }
+          if (this.get('gameFinish') === 5) {
+            setTimeout(() => {
+              if (this.get('addScore1') > this.get('addScore2')) {
+                this.set('message', 'Oscar Wins');
+              } else {
+                this.set('message', 'Rival Wins');
+              }
+            }, 1000);
+          }
+        }
+      }
+
+      __playerManage() {
+        if (this.get('playerTurn')) {
+          this.set('player1Turn', true);
+          this.set('player2Turn', false);
+        } else {
+          this.set('player1Turn', false);
+          this.set('player2Turn', true);
+        }
+      }
+
+      __changeTurn() {
+        if (this.get('turnCounter') === 2) {
+          setTimeout(() => {
+            if (!this.get('isWinner')) {
+              this.set('playerTurn', !this.get('playerTurn'));
+              this.set('player1Turn', !this.get('player1Turn'));
+              this.set('player2Turn', !this.get('player2Turn'));
+            }
+          }, 1000);
+          this.set('turnCounter', 0);
+        }
+      }
+
+      __addToBoard() {
+        if (this.get('playerTurn')) {
+          this.set('addScore1', this.get('addScore1') + 1);
+        } else {
+          this.set('addScore2', this.get('addScore2') + 1);
+        }
+      }
+
+      __compareFruits(e) {
+        if (this.get('saveFruit.value') === e.model.get('card.value')) {
+          this.set('turnCounter', 0);
+          this.set('gameFinish', this.get('gameFinish') + 1);
+          setTimeout(() => {
+            this.set('cardArray.' + e.model.index + '.show', false);
+            this.set('cardArray.' + this.get('saveFruit.id') + '.show', false); //this.cardArray
+            this.set('isWinner', true);
+            this.__addToBoard();
+            this.set('saveFruit', {
+              value: '',
+              id: ''
+            });
+          }, 500);
+        } else {
+          setTimeout(() => {
+            this.set('cardArray.' + this.get('saveFruit.id') + '.isPlayed', false);
+            this.set('cardArray.' + e.model.index + '.isPlayed', false);
+            this.set('isWinner', false);
+            this.set('saveFruit', {
+              value: '',
+              id: '',
+            });
+          }, 500);
+          this.set('cardArray.' + e.model.index + '.isPlayed', true);
+          this.set('cardArray.' + this.get('saveFruit.id') + '.isPlayed', true);
+        }
+      }
+    }
+
+    window.customElements.define(MemoryApp.is, MemoryApp);
+  </script>
+</dom-module>
